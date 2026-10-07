@@ -1,0 +1,14 @@
+## Visual Studio / .NET
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.log
+publish/
+
+## Thông tin kết nối riêng của từng máy (mật khẩu SQL Server, ...) - không đưa lên git
+appsettings.Local.json
+
+## Chứng chỉ OPC UA tự sinh khi chạy
+pki/

@@ -1,0 +1,222 @@
+/* ===== Metalcore Viscosity Controller Overview – 8 máy, dạng card ===== */
+:root {
+    --s1-dark: #0b4fc4;
+    --s1-light: #3b9bff;
+    --s2-dark: #e05a00;
+    --s2-light: #ffae42;
+    --cell-bg: #eef3fb;
+    --warn-bg: #fff2c7;
+    --warn: #b86e00;
+}
+
+.visc .hmi { gap: 8px; padding: 8px 10px; }
+.visc .hmi-title { font-size: clamp(16px, 2vw, 40px); letter-spacing: 0; }
+.visc .brand-logo { height: clamp(22px, 2.1vw, 44px); }
+
+.v-list { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+
+.v-row {
+    flex: 1 1 0;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(110px, 0.5fr) 1.8fr 1.8fr;
+    gap: 8px;
+}
+
+/* ---------- Tên máy ---------- */
+.v-name {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 4px 8px 4px 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(30, 50, 100, 0.07);
+    min-height: 0;
+}
+.v-name::before {
+    content: "";
+    position: absolute;
+    left: 10px; top: 16%; bottom: 16%;
+    width: 4px; border-radius: 4px;
+    background: var(--red);
+}
+.v-name-txt { font-size: clamp(10px, min(1.1vw, 1.8vh), 18px); font-weight: 800; }
+.v-name-no  { font-size: clamp(22px, min(3.2vw, 5vh), 56px); font-weight: 800; color: var(--red); line-height: 1; }
+
+/* ---------- Card công đoạn ---------- */
+.v-stage {
+    display: flex;
+    flex-direction: column;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(30, 50, 100, 0.07);
+    overflow: hidden;
+    min-width: 0;
+    min-height: 0;
+}
+
+.v-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 14px;
+    color: #fff;
+    font-size: clamp(10px, min(1.15vw, 1.9vh), 20px);
+    font-weight: 800;
+    letter-spacing: .3px;
+    white-space: nowrap;
+}
+.v-bar .ico { width: 1.25em; height: 1.25em; }
+.s1 .v-bar { background: linear-gradient(90deg, var(--s1-dark), var(--s1-light)); }
+.s2 .v-bar { background: linear-gradient(90deg, var(--s2-dark), var(--s2-light)); }
+
+.v-cells {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
+    padding: 3px 6px 5px;
+}
+
+.v-cell { display: flex; flex-direction: column; gap: 1px; min-width: 0; min-height: 0; }
+.v-cell::before {
+    content: attr(data-label);
+    font-size: clamp(8px, min(.8vw, 1.4vh), 13px);
+    font-weight: 700;
+    color: #3b4863;
+    text-align: center;
+}
+
+.v-box {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .3em;
+    padding: 0 3px;
+    border-radius: 8px;
+    font-size: clamp(10px, min(1.1vw, 1.55vh), 20px);
+    font-weight: 800;
+    min-width: 0;
+}
+
+.v-val { display: flex; flex-direction: column; align-items: center; line-height: 1; }
+.v-val b { font-size: 1.3em; font-weight: 800; font-variant-numeric: tabular-nums; }
+.v-val small { font-size: .85em; font-weight: 700; }
+
+.ico-g { width: 1.6em; height: 1.6em; flex: none; color: var(--s1-dark); }
+.ico-arrow { width: 1.3em; height: 1.3em; flex: none; }
+.ico-arrow.up { color: #e11d2e; }
+.ico-arrow.down { color: #1769e0; }
+.ico-res { width: 1.5em; height: 1.5em; flex: none; }
+
+.v-neutral { background: var(--cell-bg); color: var(--text); }
+
+.v-ok   { background: var(--green-bg); color: var(--green); }
+.v-ok .ico-res { color: var(--green-ico); }
+.v-ng   { background: var(--ng-bg); color: var(--ng); }
+.v-warn { background: var(--warn-bg); color: var(--warn); }
+
+/* ACTUAL: stage 1 xanh lá, stage 2 xanh dương khi OK; đỏ khi NG */
+.s1 .v-actual.is-ok { background: var(--green-bg); color: var(--green); }
+.s1 .v-actual.is-ok .ico-g { color: var(--green-ico); }
+.s2 .v-actual.is-ok { background: #dbe8ff; color: var(--blue); }
+.s2 .v-actual.is-ok .ico-g { color: var(--blue); }
+.v-actual.is-ng { background: #fbc9cf; color: var(--ng); }
+.v-actual.is-ng .ico-g { color: var(--ng); }
+.v-actual .v-val b { font-size: 1.55em; }
+
+/* ---------- Màn hình hẹp: card xếp dọc, cuộn trang ---------- */
+@media (max-width: 1200px), (max-height: 559px) {
+    html, body { overflow: auto; height: auto; }
+    .visc .hmi { height: auto; min-height: 100vh; }
+    .v-list { flex: none; }
+    .v-row { flex: none; grid-template-columns: 1fr; gap: 8px; }
+    .v-name { flex-direction: row; align-items: baseline; gap: 12px; padding: 8px 8px 8px 26px; }
+    .v-name-no { font-size: 30px; }
+    .v-name-txt { font-size: 13px; }
+    .v-bar { padding: 5px 14px; font-size: 15px; }
+    .v-cells { padding: 6px; }
+    .v-cell::before { font-size: 11px; }
+    .v-box { font-size: 15px; padding: 8px 4px; }
+}
+
+@media (max-width: 640px) {
+    .v-cells { grid-template-columns: repeat(3, 1fr); }
+    .v-box { font-size: 13px; }
+    .ico-g { display: none; }
+}
+
+/* ---------- Bỏ icon, tập trung vào thông số ---------- */
+.v-bar .ico, .ico-g, .ico-arrow, .ico-res, .v-box .dot { display: none !important; }
+.v-bar { padding-left: 14px; }
+.v-val b { font-size: 1.4em; }
+.v-actual .v-val b { font-size: 1.6em; }
+.v-ok, .v-ng, .v-warn { font-size: clamp(11px, min(1.25vw, 1.7vh), 22px); }
+
+/* ---------- Giảm màu: navy (cấu trúc), xanh lá (OK, chỉ chữ), đỏ (NG) ---------- */
+:root { --cell-bg: #f3f5f9; }
+
+.s1 .v-bar, .s2 .v-bar { background: #26324f; }
+.v-cell::before { color: #6b7690; font-weight: 600; }
+
+.v-neutral,
+.v-box.v-ok,
+.s1 .v-actual.is-ok,
+.s2 .v-actual.is-ok { background: var(--cell-bg); }
+
+.v-neutral { color: var(--text); }
+.v-box.v-ok { color: var(--green); }
+.s1 .v-actual.is-ok, .s2 .v-actual.is-ok { color: var(--text); }
+
+.v-actual.is-ng, .v-ng, .v-warn { background: var(--ng-bg); color: var(--ng); }
+
+/* ---------- Thông số lớn hơn: giá trị và đơn vị trên cùng một dòng ---------- */
+.v-val { flex-direction: row; align-items: baseline; gap: .25em; }
+.v-val b { font-size: 2.05em; }
+.v-val small { font-size: .85em; }
+.v-actual .v-val b { font-size: 2.3em; }
+/* STANDARD: dung sai xuống dòng dưới vì khá dài */
+.v-cell[data-label="TIÊU CHUẨN"] .v-val { flex-direction: column; align-items: center; gap: 0; }
+.v-cell[data-label="TIÊU CHUẨN"] .v-val b { font-size: 1.75em; }
+.v-cell[data-label="TIÊU CHUẨN"] .v-val small { font-size: .8em; }
+.v-ok, .v-ng, .v-warn { font-size: clamp(12px, min(1.5vw, 2.4vh), 26px); }
+.v-cell::before { font-size: clamp(9px, min(.9vw, 1.5vh), 14px); }
+.v-val { line-height: .95; }
+.v-actual .v-val b { font-size: 2.1em; }
+.v-cell[data-label="TIÊU CHUẨN"] .v-val b { font-size: 1.6em; }
+.v-val b { font-size: 1.85em; }
+.v-val small { font-size: .8em; }
+
+/* Trạng thái chưa có dữ liệu / mất kết nối (realtime) */
+.v-box.v-na, .v-actual.is-na { background: #eceff4; color: #8b94a7; }
+
+/* ---------- Thông số lớn hơn, dung sai (±) cùng hàng với số chuẩn ---------- */
+@media (min-width: 1201px) and (min-height: 560px) {
+    .visc .v-row { grid-template-columns: minmax(96px, .4fr) 1.9fr 1.9fr; }
+    .visc .v-name { padding: 4px 6px 4px 18px; }
+    .visc .v-name::before { left: 7px; }
+    .visc .v-name-txt { font-size: clamp(9px, min(.9vw, 1.45vh), 16px); line-height: 1.1; }
+
+    .visc .v-bar { padding: 1px 12px; font-size: clamp(10px, min(1vw, 1.65vh), 18px); }
+    .visc .v-cells { gap: 3px; padding: 2px 4px 4px; }
+    .visc .v-cell::before { font-size: clamp(8px, min(.8vw, 1.3vh), 12px); }
+
+    .visc .v-box { font-size: clamp(11px, min(1.3vw, 1.85vh), 24px); padding: 0 2px; }
+    .visc .v-val { flex-direction: row; align-items: baseline; gap: .2em; line-height: .95; white-space: nowrap; }
+    .visc .v-val b { font-size: 2.05em; }
+    .visc .v-val small { font-size: .7em; }
+    .visc .v-actual .v-val b { font-size: 2.1em; }
+    /* TIÊU CHUẨN: số và (±) trên một hàng */
+    .visc .v-cell[data-label="TIÊU CHUẨN"] .v-val { flex-direction: row; align-items: baseline; }
+    .visc .v-cell[data-label="TIÊU CHUẨN"] .v-val b { font-size: 1.85em; }
+    .visc .v-cell[data-label="TIÊU CHUẨN"] .v-val small { font-size: .62em; }
+    .visc .v-ok, .visc .v-ng, .visc .v-warn, .visc .v-na { font-size: clamp(12px, min(1.6vw, 2.5vh), 28px); }
+}

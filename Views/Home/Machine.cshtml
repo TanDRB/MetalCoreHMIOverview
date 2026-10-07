@@ -1,0 +1,75 @@
+@{
+    Layout = null;
+    var no = (int)(ViewData["No"] ?? 1);
+
+    var cards = new[]
+    {
+        new { Key = "c1", Label = "CHEMLOK",     Name = "205",         Metric = "Viscosity (s)",   Unit = "s",  Std = 16.0, Tol = 0.5,  Actual = 15.8 },
+        new { Key = "c2", Label = "CHEMLOK",     Name = "6108",        Metric = "Viscosity (s)",   Unit = "s",  Std = 19.0, Tol = 0.5,  Actual = 20.1 },
+        new { Key = "c3", Label = "TEMPERATURE", Name = "Temperature", Metric = "°C",              Unit = "°C", Std = 75.0, Tol = 10.0, Actual = double.NaN },   // chưa có tag nhiệt độ: để trống
+    };
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sơn gang cầu #@no.ToString("00")</title>
+    <link rel="stylesheet" href="~/css/hmi.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/machine.css" asp-append-version="true" />
+</head>
+<body class="mach" data-machine="@no">
+    <div class="hmi">
+        <header class="hmi-header">
+            <div class="brand">
+                <img class="brand-logo" src="~/images/drb-vietnam-logo.png" alt="DRB Vietnam" />
+            </div>
+            <div class="m-title">
+                <h1 class="hmi-title">SƠN GANG CẦU #@no.ToString("00")</h1>
+            </div>
+            <div class="header-right">
+                <span class="m-running"><i class="dot"></i>RUNNING</span>
+                <partial name="_HmiMenu" />
+            </div>
+        </header>
+
+        <main class="m-grid">
+            @foreach (var c in cards)
+            {
+                var blank = double.IsNaN(c.Actual);
+                var ng = !blank && Math.Abs(c.Actual - c.Std) > c.Tol + 1e-9;
+                var state = blank ? "na" : ng ? "ng" : "ok";
+                <section class="m-card @c.Key">
+                    <div class="m-head">
+                        <div class="m-head-main">
+                            <span class="m-label">@c.Label</span>
+                            @if (c.Key != "c3")
+                            {
+                                <b class="m-name">@c.Name</b>
+                            }
+                        </div>
+                        <span class="m-metric">@c.Metric</span>
+                    </div>
+
+                    <div class="m-std">
+                        <span class="m-key">TIÊU CHUẨN</span>
+                        <div class="m-std-val">
+                            <b>@(blank ? "--" : c.Std.ToString("0.0") + " ± " + c.Tol.ToString("0.0"))<small>@(blank ? "" : c.Unit)</small></b>
+                        </div>
+                    </div>
+
+                    <div class="m-actual is-@state">
+                        <span class="m-key">THỰC TẾ</span>
+                        <span class="m-value"><b>@(blank ? "--" : c.Actual.ToString("0.0"))</b><small>@(blank ? "" : c.Unit)</small></span>
+                    </div>
+
+                    <div class="m-result is-@state">@(blank ? "--" : ng ? "NG" : "OK")</div>
+                </section>
+            }
+        </main>
+    </div>
+
+    <script src="~/js/hmi.js" asp-append-version="true"></script>
+    <script src="~/js/realtime.js" asp-append-version="true"></script>
+</body>
+</html>

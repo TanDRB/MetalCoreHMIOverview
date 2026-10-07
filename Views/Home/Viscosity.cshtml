@@ -1,0 +1,120 @@
+@{
+    Layout = null;
+
+    // Thông số chuẩn dùng chung cho mọi máy. Diff = Actual - Standard.
+    var stages = new[]
+    {
+        new { Key = "s1", Title = "PAINTING STAGE 1 - 205",  Std = 16.0, Tol = 0.5 },
+        new { Key = "s2", Title = "PAINTING STAGE 2 - 6108", Std = 19.0, Tol = 0.5 },
+    };
+
+    // P (Pressure, MM) và A (Actual, s) của [stage 1, stage 2] cho 8 máy
+    var machines = new[]
+    {
+        new { No = "01", P = new[] { 212, 506 }, A = new[] { 15.8, 19.3 } },
+        new { No = "02", P = new[] { 158, 134 }, A = new[] { 16.1, 18.3 } },
+        new { No = "03", P = new[] { 150, 162 }, A = new[] { 16.0, 19.0 } },
+        new { No = "04", P = new[] { 150, 156 }, A = new[] { 16.0, 19.0 } },
+        new { No = "05", P = new[] { 376, 106 }, A = new[] { 17.0, 19.0 } },
+        new { No = "06", P = new[] { 198, 140 }, A = new[] { 16.2, 18.8 } },
+        new { No = "07", P = new[] { 165, 148 }, A = new[] { 15.6, 19.1 } },
+        new { No = "08", P = new[] { 182, 160 }, A = new[] { 16.3, 18.7 } },
+    };
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Metalcore Viscosity Controller Overview</title>
+    <link rel="stylesheet" href="~/css/hmi.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/viscosity.css" asp-append-version="true" />
+</head>
+<body class="visc">
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 12.5l9 5 9-5M3 17l9 5 9-5"/></symbol>
+        <symbol id="i-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 18a9 9 0 1 1 15 0"/><path d="M12 14l4-5"/><circle cx="12" cy="14.5" r="1" fill="currentColor"/></symbol>
+        <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="13" r="8"/><circle cx="11" cy="13" r="4"/><path d="M11 13l8-8M16 4v4h4"/></symbol>
+        <symbol id="i-flask" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4.5 19a1.6 1.6 0 0 0 1.4 2.4h12.2a1.6 1.6 0 0 0 1.4-2.4L14 9V3"/><path d="M7.5 15h9"/></symbol>
+        <symbol id="i-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V5M5 12l7-7 7 7"/></symbol>
+        <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v15M5 12l7 7 7-7"/></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M7 12.5l3.5 3.5L17 9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+        <symbol id="i-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5L22 20H2L12 3.5z"/><path d="M12 10v5M12 17.8h.01"/></symbol>
+    </svg>
+
+    <div class="hmi">
+        <header class="hmi-header">
+            <div class="brand">
+                <img class="brand-logo" src="~/images/drb-vietnam-logo.png" alt="DRB Vietnam" />
+            </div>
+            <h1 class="hmi-title">METALCORE VISCOSITY CONTROLLER OVERVIEW</h1>
+            <div class="header-right">
+                <partial name="_HmiMenu" />
+            </div>
+        </header>
+
+        <main class="v-list">
+            @foreach (var m in machines)
+            {
+                <section class="v-row" data-machine="@int.Parse(m.No)">
+                    <div class="v-name">
+                        <span class="v-name-txt">CTL METALCORE</span>
+                        <span class="v-name-no">#@m.No</span>
+                    </div>
+
+                    @for (var s = 0; s < stages.Length; s++)
+                    {
+                        var st = stages[s];
+                        var diff = Math.Round(m.A[s] - st.Std, 1);
+                        var ng = Math.Abs(diff) > st.Tol + 1e-9;
+                        var over = diff > 0;
+                        <div class="v-stage @st.Key">
+                            <div class="v-bar"><svg class="ico"><use href="#i-layers" /></svg>@st.Title</div>
+                            <div class="v-cells">
+                                <div class="v-cell" data-label="STATUS">
+                                    <span class="v-box v-ok"><i class="dot"></i>START</span>
+                                </div>
+                                <div class="v-cell" data-label="PRESSURE">
+                                    <span class="v-box v-neutral">
+                                        <svg class="ico ico-g"><use href="#i-gauge" /></svg>
+                                        <span class="v-val"><b>@m.P[s]</b><small>PPM</small></span>
+                                    </span>
+                                </div>
+                                <div class="v-cell" data-label="TIÊU CHUẨN">
+                                    <span class="v-box v-neutral">
+                                        <svg class="ico ico-g"><use href="#i-target" /></svg>
+                                        <span class="v-val"><b>@st.Std.ToString("0.0")</b><small>(±@st.Tol.ToString("0.0"))</small></span>
+                                    </span>
+                                </div>
+                                <div class="v-cell" data-label="THỰC TẾ">
+                                    <span class="v-box v-actual @(ng ? "is-ng" : "is-ok")">
+                                        <svg class="ico ico-g"><use href="#i-flask" /></svg>
+                                        <span class="v-val"><b>@m.A[s].ToString("0.0")</b><small>(s)</small></span>
+                                    </span>
+                                </div>
+                                <div class="v-cell" data-label="DIFF.">
+                                    <span class="v-box v-neutral">
+                                        @if (diff != 0)
+                                        {
+                                            <svg class="ico ico-arrow @(over ? "up" : "down")"><use href="#@(over ? "i-up" : "i-down")" /></svg>
+                                        }
+                                        <span class="v-val"><b>@diff.ToString("0.0")</b><small>(s)</small></span>
+                                    </span>
+                                </div>
+                                <div class="v-cell" data-label="RESULT">
+                                    <span class="v-box @(ng ? (over ? "v-ng" : "v-warn") : "v-ok")">
+                                        <svg class="ico ico-res"><use href="#@(ng ? "i-warn" : "i-check")" /></svg>@(ng ? "NG" : "OK")
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </section>
+            }
+        </main>
+    </div>
+
+    <script src="~/js/hmi.js" asp-append-version="true"></script>
+    <script src="~/js/realtime.js" asp-append-version="true"></script>
+</body>
+</html>

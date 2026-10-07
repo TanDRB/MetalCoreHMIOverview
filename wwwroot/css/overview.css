@@ -1,0 +1,163 @@
+/* ===== Metalcore HMI Overview – lưới 4 x 2 card (8 máy) ===== */
+:root {
+    --navy: #26324f;
+    --muted: #6b7690;
+    --box-bg: #f1f4fa;
+}
+
+.ovw .hmi { gap: 10px; }
+.ovw .hmi-title { font-size: clamp(18px, 2.4vw, 42px); }
+.ovw .brand-logo { height: clamp(22px, 2.1vw, 44px); }
+
+.t-grid {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 12px;
+}
+
+/* Card co giãn: cỡ chữ tính theo kích thước của chính card (cqw / cqh) */
+.t-card {
+    container-type: size;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: clamp(6px, 1.2vh, 14px);
+    padding: clamp(8px, 1.4vh, 16px) clamp(8px, 1vw, 16px);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 4px 14px rgba(30, 50, 100, 0.08);
+}
+.t-card.is-ng { border-color: #f5b5bd; }
+
+.t-label { font-size: min(3.4cqw, 4.2cqh); font-weight: 700; color: var(--muted); letter-spacing: .3px; }
+
+/* ----- Đầu card ----- */
+.t-head { display: flex; align-items: center; gap: 8px; }
+.t-no {
+    flex: none;
+    padding: .12em .4em;
+    border-radius: 8px;
+    background: var(--red);
+    color: #fff;
+    font-size: min(9cqw, 11cqh);
+    font-weight: 800;
+    line-height: 1.1;
+}
+.t-name { display: flex; flex-direction: column; min-width: 0; }
+.t-name b { font-size: min(5cqw, 6.4cqh); font-weight: 800; color: var(--navy); white-space: nowrap; }
+.t-name span { font-size: min(3cqw, 3.8cqh); font-weight: 600; color: var(--muted); white-space: nowrap; }
+.t-start {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: .5em;
+    padding: .35em .8em;
+    border-radius: 10px;
+    background: var(--green-bg);
+    color: var(--green);
+    font-size: min(4.4cqw, 5.4cqh);
+    font-weight: 800;
+}
+.t-start .dot { width: .9em; height: .9em; }
+
+/* ----- Thân card ----- */
+.t-body { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(6px, .8vw, 12px); min-height: 0; }
+
+.t-std, .t-act {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5cqh;
+    padding: 1cqh 1cqw;
+    border-radius: 12px;
+    text-align: center;
+}
+.t-std { background: var(--box-bg); }
+.t-std-val { font-size: min(5.4cqw, 6.8cqh); font-weight: 800; color: var(--navy); white-space: nowrap; }
+.t-range {
+    padding: .15em .8em;
+    border-radius: 8px;
+    background: #e3e9f5;
+    color: var(--muted);
+    font-size: min(3.6cqw, 4.6cqh);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.t-act.t-ok { background: var(--green-bg); color: var(--green); }
+.t-act.t-ng { background: var(--ng-bg); color: var(--ng); }
+.t-act .t-label { color: inherit; opacity: .8; }
+.t-act-val { display: flex; align-items: baseline; gap: .15em; }
+.t-act-val b { font-size: min(15cqw, 21cqh); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.t-act-val small { font-size: min(6.5cqw, 8.5cqh); font-weight: 800; }
+
+/* ----- Kết quả ----- */
+.t-result {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 1cqh 1.5cqw;
+    border-radius: 12px;
+    background: var(--box-bg);
+}
+.t-pill {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45em;
+    padding: .2em 0;
+    border-radius: 10px;
+    font-size: min(7cqw, 9cqh);
+    font-weight: 800;
+}
+.t-pill .ico { width: 1.15em; height: 1.15em; flex: none; }
+.t-pill.t-ok { background: var(--green-bg); color: var(--green); }
+.t-pill.t-ok .ico { color: var(--green-ico); }
+.t-pill.t-ng { background: var(--ng); color: #fff; }
+.t-pill.t-ng .ico { color: #7f0b1a; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1100px) {
+    .t-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, 1fr); }
+}
+
+/* Màn hình nhỏ / thấp: xếp card theo cột và cho cuộn trang */
+@media (max-width: 900px), (max-height: 559px) {
+    html, body { overflow: auto; height: auto; }
+    .ovw .hmi { height: auto; min-height: 100vh; }
+    .t-grid { flex: none; grid-template-rows: none; grid-auto-rows: 300px; }
+}
+@media (max-width: 560px) {
+    .t-grid { grid-template-columns: 1fr; }
+}
+
+/* Bỏ dòng phụ; tăng cỡ STANDARD TEMP */
+.t-name b { font-size: min(6cqw, 7.4cqh); }
+.t-label { font-size: min(3.8cqw, 4.8cqh); }
+.t-std-val { font-size: min(7.2cqw, 9.4cqh); }
+.t-range { font-size: min(5.2cqw, 6.6cqh); padding: .2em .8em; }
+
+/* STANDARD: số chuẩn lớn, dung sai ở dòng dưới; bỏ khoảng 65 ~ 85 */
+.t-std-val { display: flex; flex-direction: column; align-items: center; line-height: 1.05; white-space: nowrap; }
+.t-std-n   { font-size: min(13cqw, 18cqh); font-weight: 800; font-variant-numeric: tabular-nums; }
+.t-std-tol { font-size: min(7cqw, 9.4cqh); font-weight: 800; }
+
+/* Nhãn và giá trị ACTUAL / STANDARD lớn hơn một chút */
+.t-std .t-label, .t-act .t-label { font-size: min(4.8cqw, 6cqh); }
+.t-std-n { font-size: min(14.5cqw, 20cqh); }
+.t-std-tol { font-size: min(7.8cqw, 10cqh); }
+.t-act-val b { font-size: min(16.5cqw, 23cqh); }
+.t-act-val small { font-size: min(7.2cqw, 9.4cqh); }
+
+/* Trạng thái chưa có dữ liệu / mất kết nối (realtime) */
+.t-start.is-off { background: #e5e7eb; color: #6b7280; }
+.t-start.is-off .dot { background: #9ca3af; box-shadow: none; }
+.t-act.t-na { background: #eceff4; color: #8b94a7; }
+.t-pill.t-na { background: #eceff4; color: #8b94a7; }

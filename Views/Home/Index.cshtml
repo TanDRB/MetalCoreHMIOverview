@@ -1,0 +1,85 @@
+@{
+    Layout = null;
+
+    // Thông số chuẩn dùng chung: 75 (±) 10 °C
+    const double standard = 75, tolerance = 10;
+
+    var machines = new[]
+    {
+        new { No = "01", Actual = 82.0 },
+        new { No = "02", Actual = 76.0 },
+        new { No = "03", Actual = 75.6 },
+        new { No = "04", Actual = 76.0 },
+        new { No = "05", Actual = 77.0 },
+        new { No = "06", Actual = 74.5 },
+        new { No = "07", Actual = 75.2 },
+        new { No = "08", Actual = 78.4 },
+    };
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Metalcore HMI Overview</title>
+    <link rel="stylesheet" href="~/css/hmi.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/overview.css" asp-append-version="true" />
+</head>
+<body class="ovw">
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <symbol id="i-therm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 9v7"/><circle cx="12" cy="17" r="1.2" fill="currentColor"/></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M7 12.5l3.5 3.5L17 9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+        <symbol id="i-cross" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M8 8l8 8M16 8l-8 8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></symbol>
+    </svg>
+
+    <div class="hmi">
+        <header class="hmi-header">
+            <div class="brand">
+                <img class="brand-logo" src="~/images/drb-vietnam-logo.png" alt="DRB Vietnam" />
+            </div>
+            <h1 class="hmi-title">METALCORE HMI OVERVIEW</h1>
+            <div class="header-right">
+                <partial name="_HmiMenu" />
+            </div>
+        </header>
+
+        <main class="t-grid">
+            @foreach (var m in machines)
+            {
+                var ng = Math.Abs(m.Actual - standard) > tolerance + 1e-9;
+                var state = ng ? "ng" : "ok";
+                <section class="t-card @(ng ? "is-ng" : "")" data-machine="@int.Parse(m.No)">
+                    <div class="t-head">
+                        <span class="t-no">@m.No</span>
+                        <div class="t-name">
+                            <b>CTL METALCORE</b>
+                        </div>
+                        <span class="t-start"><i class="dot"></i>START</span>
+                    </div>
+
+                    <div class="t-body">
+                        <div class="t-std">
+                            <span class="t-label">TIÊU CHUẨN</span>
+                            <b class="t-std-val"><span class="t-std-n">@standard</span><span class="t-std-tol">(±) @tolerance °C</span></b>
+                        </div>
+                        <div class="t-act t-@state">
+                            <span class="t-label">THỰC TẾ</span>
+                            <span class="t-act-val"><b>@m.Actual.ToString("0.0")</b><small>°C</small></span>
+                        </div>
+                    </div>
+
+                    <div class="t-result">
+                        <span class="t-label">RESULT</span>
+                        <span class="t-pill t-@state">
+                            <svg class="ico"><use href="#@(ng ? "i-cross" : "i-check")" /></svg>@(ng ? "NG" : "OK")
+                        </span>
+                    </div>
+                </section>
+            }
+        </main>
+    </div>
+
+    <script src="~/js/hmi.js" asp-append-version="true"></script>
+    <script src="~/js/realtime.js" asp-append-version="true"></script>
+</body>
+</html>
