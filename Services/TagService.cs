@@ -30,7 +30,7 @@ namespace MetalCoreHMIOverview.Services
                 .Where(v => v.Metric == TagMetric.Standard && v.Value.HasValue)
                 .ToDictionary(v => (v.MachineNo, v.Section), v => v.Value);
             foreach (var v in all.Where(v => v.Metric == TagMetric.Actual))
-                if (plcStandard.TryGetValue((v.MachineNo, v.Section), out var std) && std > 0)
+                if (plcStandard.TryGetValue((v.MachineNo, v.Section), out var std))
                     v.Standard = std;
 
             IEnumerable<TagValueDto> q = all;

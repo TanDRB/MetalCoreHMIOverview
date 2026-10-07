@@ -1,5 +1,5 @@
 @{
-    // Thêm giao diện mới: chỉ cần thêm một dòng vào danh sách này. Id = số máy (chỉ dùng cho trang Machine).
+    // Thêm giao diện mới bằng cách thêm một dòng vào danh sách; Id là số máy (chỉ dùng cho trang Machine)
     var pages = new List<(string Action, int? Id, string Title, string Short)>
     {
         ("Index",     null, "Metalcore HMI Overview", "MetalCore  Overview"),
@@ -16,6 +16,10 @@
         p.Action.Equals(current, StringComparison.OrdinalIgnoreCase) && (p.Id == null || p.Id == currentId);
     var currentTitle = pages.Where(IsActive).Select(p => p.Short).FirstOrDefault() ?? "Chọn giao diện";
 }
+<button type="button" class="fs-btn" id="fs-btn" title="Toàn màn hình" aria-label="Toàn màn hình">
+    <svg class="ico fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+    <svg class="ico fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
+</button>
 <div class="screen-menu" id="screen-menu">
     <button type="button" class="screen-menu-btn" aria-haspopup="listbox" aria-expanded="false">
         <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>

@@ -6,14 +6,11 @@ using Opc.Ua;
 using Opc.Ua.Client;
 using ISession = Opc.Ua.Client.ISession;
 
-// SelectEndpoint / Session.Create đang được đánh dấu obsolete trong thư viện 1.5.378 nhưng vẫn là cách đơn giản nhất.
+// SelectEndpoint / Session.Create bị đánh dấu obsolete ở bản 1.5.378 nhưng vẫn dùng được.
 #pragma warning disable CS0618
 namespace MetalCoreHMIOverview.Services
 {
-    /// <summary>
-    /// Client OPC UA tới Kepware (opc.tcp://host:49320, SecurityPolicy None).
-    /// Singleton: giữ một session và tự kết nối lại khi bị mất.
-    /// </summary>
+    /// <summary>Client OPC UA tới Kepware (SecurityPolicy None): giữ một session và tự kết nối lại khi mất.</summary>
     public sealed class OpcUaClient : IOpcUaClient
     {
         private readonly OpcUaOptions _opt;
@@ -36,10 +33,7 @@ namespace MetalCoreHMIOverview.Services
         public bool IsConnected => _session?.Connected == true;
         public string? LastError { get; private set; }
 
-        /// <summary>
-        /// Đăng ký (subscription) toàn bộ tag với Kepware; giá trị mới được đẩy về và lưu trong bộ nhớ.
-        /// Mỗi lần gọi trả về giá trị mới nhất của từng tag. Cách này không phải chờ từng thiết bị phản hồi.
-        /// </summary>
+        /// <summary>Đăng ký toàn bộ tag với Kepware (subscription) và trả về giá trị mới nhất của từng tag.</summary>
         public async Task<IReadOnlyList<OpcReadResult>> ReadAsync(IReadOnlyList<TagDefinition> tags, CancellationToken ct)
         {
             var now = DateTime.UtcNow;
@@ -65,7 +59,6 @@ namespace MetalCoreHMIOverview.Services
                 _log.LogWarning("OPC UA lỗi: {Message}", ex.Message);
                 await DropSessionAsync();
 
-                // Mất kết nối: trả về chất lượng Bad để giao diện biết
                 return tags.Select(t => new OpcReadResult(t.Id, null, false, now)).ToList();
             }
         }
@@ -126,8 +119,8 @@ namespace MetalCoreHMIOverview.Services
             _subscriptionSession = null;
             _tagKey = string.Empty;
             if (sub == null) return;
-            try { if (ses != null && ses.Connected) await ses.RemoveSubscriptionAsync(sub); } catch { /* bỏ qua */ }
-            try { sub.Dispose(); } catch { /* bỏ qua */ }
+            try { if (ses != null && ses.Connected) await ses.RemoveSubscriptionAsync(sub); } catch { }
+            try { sub.Dispose(); } catch { }
         }
 
         public async Task<IReadOnlyList<OpcNodeDto>> BrowseAsync(string? nodeId, CancellationToken ct)
@@ -232,7 +225,7 @@ namespace MetalCoreHMIOverview.Services
             var s = _session;
             _session = null;
             if (s == null) return;
-            try { await s.CloseAsync(); } catch { /* bỏ qua */ }
+            try { await s.CloseAsync(); } catch { }
             s.Dispose();
         }
 

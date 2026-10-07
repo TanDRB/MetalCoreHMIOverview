@@ -6,7 +6,7 @@
     {
         new { Key = "c1", Label = "CHEMLOK",     Name = "205",         Metric = "Viscosity (s)",   Unit = "s",  Std = 16.0, Tol = 0.5,  Actual = 15.8 },
         new { Key = "c2", Label = "CHEMLOK",     Name = "6108",        Metric = "Viscosity (s)",   Unit = "s",  Std = 19.0, Tol = 0.5,  Actual = 20.1 },
-        new { Key = "c3", Label = "TEMPERATURE", Name = "Temperature", Metric = "°C",              Unit = "°C", Std = 75.0, Tol = 10.0, Actual = double.NaN },   // chưa có tag nhiệt độ: để trống
+        new { Key = "c3", Label = "NHIỆT ĐỘ", Name = "Temperature", Metric = "°C",              Unit = "°C", Std = 70.0, Tol = 10.0, Actual = double.NaN },
     };
 }
 <!DOCTYPE html>
@@ -28,7 +28,6 @@
                 <h1 class="hmi-title">SƠN GANG CẦU #@no.ToString("00")</h1>
             </div>
             <div class="header-right">
-                <span class="m-running"><i class="dot"></i>RUNNING</span>
                 <partial name="_HmiMenu" />
             </div>
         </header>
@@ -54,13 +53,13 @@
                     <div class="m-std">
                         <span class="m-key">TIÊU CHUẨN</span>
                         <div class="m-std-val">
-                            <b>@(blank ? "--" : c.Std.ToString("0.0") + " ± " + c.Tol.ToString("0.0"))<small>@(blank ? "" : c.Unit)</small></b>
+                            <b>@(blank ? "--" : c.Std.ToString("0.0") + " ± " + c.Tol.ToString("0.0"))<small>@c.Unit</small></b>
                         </div>
                     </div>
 
                     <div class="m-actual is-@state">
                         <span class="m-key">THỰC TẾ</span>
-                        <span class="m-value"><b>@(blank ? "--" : c.Actual.ToString("0.0"))</b><small>@(blank ? "" : c.Unit)</small></span>
+                        <span class="m-value"><b>@(blank ? "--" : c.Actual.ToString("0.0"))</b><small>@c.Unit</small></span>
                     </div>
 
                     <div class="m-result is-@state">@(blank ? "--" : ng ? "NG" : "OK")</div>

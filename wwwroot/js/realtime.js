@@ -1,5 +1,4 @@
-// Metalcore HMI – nhận dữ liệu realtime từ Kepware qua Server-Sent Events (/api/tags/stream)
-// và cập nhật các trang Overview, Viscosity, Machine. Không cần thư viện ngoài.
+// Nhận dữ liệu realtime qua Server-Sent Events (/api/tags/stream) và cập nhật các trang Overview, Viscosity, Machine
 (function () {
     'use strict';
 
@@ -14,13 +13,13 @@
         if (v === null || v === undefined || isNaN(v)) return NA;
         return Number(v).toFixed(d === undefined ? 1 : d).replace('.', ',');
     }
-    function shortNum(v) {   // 75 -> "75", 16.5 -> "16,5"
+    function shortNum(v) {
         if (v === null || v === undefined || isNaN(v)) return NA;
         return (v % 1 === 0 ? String(v) : Number(v).toFixed(1)).replace('.', ',');
     }
-    function $(root, sel) { return root.querySelector(sel); }
+    function $(root, sel) { return root ? root.querySelector(sel) : null; }
     function setText(el, text) { if (el) el.textContent = text; }
-    function setLastText(el, text) {          // đổi chữ cuối trong phần tử (giữ nguyên icon)
+    function setLastText(el, text) {
         if (!el) return;
         var n = el.lastChild;
         if (n && n.nodeType === 3) n.nodeValue = text; else el.appendChild(document.createTextNode(text));
@@ -34,22 +33,28 @@
 
     function key(m, section, metric) { return m + '|' + section + '|' + metric; }
 
-    function ok(d) { return d && d.value !== null && d.value !== undefined; }   // hiển thị mọi giá trị đọc được, bất kể chất lượng Good/Bad
-    function state(d) {                        // 'ok' | 'ng' | 'na'
+    function ok(d) { return d && d.value !== null && d.value !== undefined; }
+    function state(d) {
         if (!ok(d) || !d.result) return 'na';
         return d.result === 'NG' ? 'ng' : 'ok';
+    }
+    // Nhiệt độ hiển thị số nguyên: OK/NG tính theo đúng số đang hiển thị (đã làm tròn)
+    function tempState(d) {
+        if (!ok(d)) return 'na';
+        if (d.standard === null || d.standard === undefined || d.tolerance === null || d.tolerance === undefined) return state(d);
+        return Math.abs(Math.round(d.value) - d.standard) <= d.tolerance + 1e-9 ? 'ok' : 'ng';
     }
     function statusInfo(d) {
         if (!ok(d)) return { text: 'OFFLINE', on: false };
         return d.value >= 1 ? { text: 'START', on: true } : { text: 'STOP', on: false };
     }
 
-    // ---------- Metalcore HMI Overview ----------
+    // Metalcore HMI Overview
     function applyOvw(map) {
         document.querySelectorAll('.t-card').forEach(function (card) {
             var m = +card.dataset.machine;
             var t = map[key(m, 'Temperature', 2)];
-            var st = state(t);
+            var st = tempState(t);
 
             var s = statusInfo(map[key(m, 'Machine', 0)]);
             var start = $(card, '.t-start');
@@ -57,12 +62,13 @@
             setLastText(start, s.text);
 
             if (t && t.standard !== null && t.tolerance !== null) {
-                setText($(card, '.t-std-n'), shortNum(t.standard));
-                setText($(card, '.t-std-tol'), '(±) ' + shortNum(t.tolerance) + ' ' + (t.unit || '°C'));
+                setFirstText($(card, '.t-std-n'), shortNum(t.standard));
+                setText($(card, '.t-std-n small'), t.unit || '°C');
+                setText($(card, '.t-std-tol'), '± ' + shortNum(t.tolerance));
             }
 
             setClass($(card, '.t-act'), 't-act', 't-' + st);
-            setText($(card, '.t-act-val b'), ok(t) ? num(t.value, 1) : NA);
+            setText($(card, '.t-act-val b'), ok(t) ? num(t.value, 0) : NA);
 
             var pill = $(card, '.t-pill');
             setClass(pill, 't-pill', 't-' + st);
@@ -73,7 +79,7 @@
         });
     }
 
-    // ---------- Viscosity ----------
+    // Viscosity
     function applyVisc(map) {
         document.querySelectorAll('.v-row').forEach(function (row) {
             var m = +row.dataset.machine;
@@ -92,7 +98,6 @@
 
                 setText($(cell('PRESSURE'), 'b'), ok(pre) ? num(pre.value, 0) : NA);
 
-                // Tiêu chuẩn lấy từ tag VISCOSITY TC của PLC; chưa có dữ liệu (Kepware Unknown) thì hiện "--"
                 var stdTag = map[key(m, sec, 3)];
                 var hasStd = ok(stdTag);
                 setText($(cell('TIÊU CHUẨN'), 'b'), hasStd ? num(stdTag.value, 1) : NA);
@@ -101,34 +106,46 @@
                 setClass($(cell('THỰC TẾ'), '.v-box'), 'v-box v-actual', 'is-' + (st === 'na' ? 'na' : st));
                 setText($(cell('THỰC TẾ'), 'b'), ok(act) ? num(act.value, 1) : NA);
 
-                var diff = ok(act) && act.standard !== null ? Math.round((act.value - act.standard) * 10) / 10 : null;
+                var diff = ok(act) && hasStd ? Math.round((act.value - stdTag.value) * 10) / 10 : null;
                 setText($(cell('DIFF.'), 'b'), diff === null ? NA : (diff > 0 ? '+' : '') + num(diff, 1));
 
-                var res = $(cell('RESULT'), '.v-box');
+                var res = $(cell('KẾT QUẢ'), '.v-box');
                 setClass(res, 'v-box', st === 'ok' ? 'v-ok' : st === 'ng' ? 'v-ng' : 'v-na');
                 setLastText(res, st === 'na' ? NA : st === 'ng' ? 'NG' : 'OK');
             });
         });
     }
 
-    // ---------- Machine #01 ----------
+    // Machine
     var MACHINE = +(document.body.dataset.machine || 1);
     function applyMach(map) {
-        var cards = { c1: key(MACHINE, 'Stage1', 2), c2: key(MACHINE, 'Stage2', 2) };   // Temperature (c3): chưa có tag, để trống
+        var cards = {
+            c1: key(MACHINE, 'Stage1', 2),
+            c2: key(MACHINE, 'Stage2', 2),
+            c3: key(MACHINE, 'Temperature', 2)
+        };
         Object.keys(cards).forEach(function (c) {
             var card = $(document, '.m-card.' + c);
             if (!card) return;
             var d = map[cards[c]];
-            var st = state(d);
+            var dec = c === 'c3' ? 0 : 1;
+            var st = c === 'c3' ? tempState(d) : state(d);
 
-            var stdTag = map[cards[c].replace(/\|2$/, '|3')];
-            if (stdTag && ok(stdTag) && d && d.tolerance !== null)
-                setFirstText($(card, '.m-std-val b'), num(stdTag.value, 1) + ' ± ' + num(d.tolerance, 1));
+            // Độ nhớt: chuẩn lấy từ tag VISCOSITY TC của PLC. Nhiệt độ: chuẩn cấu hình (70 ± 10).
+            var stdValue = null;
+            if (c === 'c3') {
+                if (d && d.standard !== null) stdValue = d.standard;
+            } else {
+                var stdTag = map[cards[c].replace(/\|2$/, '|3')];
+                if (ok(stdTag)) stdValue = stdTag.value;
+            }
+            if (stdValue !== null && d && d.tolerance !== null)
+                setFirstText($(card, '.m-std-val b'), num(stdValue, dec) + ' ± ' + num(d.tolerance, dec));
             else
                 setFirstText($(card, '.m-std-val b'), NA);
 
             setClass($(card, '.m-actual'), 'm-actual', 'is-' + st);
-            setText($(card, '.m-value b'), ok(d) ? num(d.value, 1) : NA);
+            setText($(card, '.m-value b'), ok(d) ? num(d.value, dec) : NA);
 
             var r = $(card, '.m-result');
             setClass(r, 'm-result', 'is-' + st);
@@ -138,15 +155,15 @@
 
     var apply = page === 'ovw' ? applyOvw : page === 'visc' ? applyVisc : applyMach;
 
-    // Số quá dài (ví dụ 16672,0) tự thu nhỏ để luôn nằm gọn trong ô
+    // Số quá dài tự thu nhỏ để nằm gọn trong ô
     var FIT = { ovw: ['.t-act-val', '.t-act'], visc: ['.v-val', '.v-box'], mach: ['.m-value', '.m-actual'] }[page];
-    // Chưa có dữ liệu ("--") thì ẩn đơn vị đi kèm (s, MM, °C)
+    // Ẩn đơn vị (s, PPM, °C) khi giá trị là "--"
     function tidyUnits() {
         document.querySelectorAll('b + small').forEach(function (u) {
             var empty = u.previousElementSibling.textContent.trim().indexOf(NA) === 0;
             u.style.visibility = empty ? 'hidden' : '';
         });
-        document.querySelectorAll('b > small').forEach(function (u) {   // đơn vị nằm trong thẻ b (ô TIÊU CHUẨN trang Machine)
+        document.querySelectorAll('b > small').forEach(function (u) {
             u.style.visibility = u.parentElement.textContent.trim().indexOf(NA) === 0 ? 'hidden' : '';
         });
     }
@@ -172,7 +189,6 @@
         fitAll();
     }
 
-    // Trước khi có dữ liệu (hoặc khi mất kết nối) hiện "--" thay vì số mẫu
     function showNoData() { apply({}); tidyUnits(); }
     showNoData();
 
@@ -182,7 +198,7 @@
         es.onmessage = function (e) {
             try { onData(JSON.parse(e.data)); } catch (err) { /* bỏ qua gói lỗi */ }
         };
-        es.onerror = function () { showNoData(); };   // EventSource tự kết nối lại
+        es.onerror = function () { showNoData(); };
     }
     connect();
 })();

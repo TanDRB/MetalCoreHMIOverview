@@ -1,14 +1,12 @@
 @{
     Layout = null;
 
-    // Thông số chuẩn dùng chung cho mọi máy. Diff = Actual - Standard.
     var stages = new[]
     {
         new { Key = "s1", Title = "PAINTING STAGE 1 - 205",  Std = 16.0, Tol = 0.5 },
         new { Key = "s2", Title = "PAINTING STAGE 2 - 6108", Std = 19.0, Tol = 0.5 },
     };
 
-    // P (Pressure, MM) và A (Actual, s) của [stage 1, stage 2] cho 8 máy
     var machines = new[]
     {
         new { No = "01", P = new[] { 212, 506 }, A = new[] { 15.8, 19.3 } },
@@ -59,7 +57,7 @@
                 <section class="v-row" data-machine="@int.Parse(m.No)">
                     <div class="v-name">
                         <span class="v-name-txt">CTL METALCORE</span>
-                        <span class="v-name-no">#@m.No</span>
+                        <span class="v-name-no">@m.No</span>
                     </div>
 
                     @for (var s = 0; s < stages.Length; s++)
@@ -101,7 +99,7 @@
                                         <span class="v-val"><b>@diff.ToString("0.0")</b><small>(s)</small></span>
                                     </span>
                                 </div>
-                                <div class="v-cell" data-label="RESULT">
+                                <div class="v-cell" data-label="KẾT QUẢ">
                                     <span class="v-box @(ng ? (over ? "v-ng" : "v-warn") : "v-ok")">
                                         <svg class="ico ico-res"><use href="#@(ng ? "i-warn" : "i-check")" /></svg>@(ng ? "NG" : "OK")
                                     </span>

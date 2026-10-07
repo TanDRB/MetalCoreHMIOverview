@@ -11,17 +11,16 @@ namespace MetalCoreHMIOverview.Controllers.Api
     {
         private readonly ITagService _tags;
         private readonly ITagCache _cache;
+        private readonly int _uiRefreshMs;
 
-        public TagsController(ITagService tags, ITagCache cache)
+        public TagsController(ITagService tags, ITagCache cache, Microsoft.Extensions.Options.IOptions<MetalCoreHMIOverview.Models.Options.OpcUaOptions> options)
         {
             _tags = tags;
             _cache = cache;
+            _uiRefreshMs = Math.Clamp(options.Value.UiRefreshMs, 100, 10000);
         }
 
-        /// <summary>
-        /// GET /api/tags/stream - Server-Sent Events: đẩy toàn bộ giá trị tag về trình duyệt ngay khi có thay đổi
-        /// (giao diện dùng EventSource, không cần thư viện). Cứ 15 giây không đổi thì gửi lại một lần để giữ kết nối.
-        /// </summary>
+        /// <summary>GET /api/tags/stream - Server-Sent Events: đẩy giá trị tag về trình duyệt, tối đa 1 lần mỗi UiRefreshMs (15 giây gửi lại một lần để giữ kết nối).</summary>
         [HttpGet("stream")]
         public async Task Stream(CancellationToken ct)
         {
@@ -39,6 +38,8 @@ namespace MetalCoreHMIOverview.Controllers.Api
                     var payload = System.Text.Json.JsonSerializer.Serialize(_tags.GetLatest(), json);
                     await Response.WriteAsync($"data: {payload}\n\n", ct);
                     await Response.Body.FlushAsync(ct);
+
+                    await Task.Delay(_uiRefreshMs, ct);
                 }
             }
             catch (OperationCanceledException) { /* trình duyệt đóng trang */ }

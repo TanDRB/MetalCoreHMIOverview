@@ -13,10 +13,11 @@ namespace MetalCoreHMIOverview.Models.Options
         public int SessionTimeoutMs { get; set; } = 60000;
         public int PollIntervalMs { get; set; } = 1000;
 
-        /// <summary>Chu kỳ ghi lịch sử vào SQL Server (giây).</summary>
+        /// <summary>Khoảng cách tối thiểu giữa hai lần đẩy dữ liệu xuống mỗi trình duyệt (ms). 1000 = tối đa 1 lần mỗi giây.</summary>
+        public int UiRefreshMs { get; set; } = 1000;
+
         public int PersistIntervalSec { get; set; } = 10;
 
-        /// <summary>Chu kỳ nạp lại danh sách tag từ database (giây).</summary>
         public int ReloadTagsIntervalSec { get; set; } = 60;
 
         /// <summary>Số ngày giữ lịch sử, 0 = không xóa.</summary>

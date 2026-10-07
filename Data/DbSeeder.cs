@@ -4,11 +4,8 @@ using Microsoft.EntityFrameworkCore;
 namespace MetalCoreHMIOverview.Data
 {
     /// <summary>
-    /// Tạo danh sách tag ban đầu cho 8 máy khi bảng TagDefinitions còn trống.
-    /// NodeId theo cấu trúc thật trong Kepware (channel "Metalcore"):
-    ///   Metalcore.CTL.on#N / Metalcore.CTL.Temp#N                      - trạng thái và nhiệt độ máy N
-    ///   Metalcore.viscosity#N-S.PPM / .VISCOSITY TC / .VISCOSITY TT     - máy N, công đoạn S (1 hoặc 2)
-    /// Muốn đổi tag, sửa trực tiếp bảng TagDefinitions (Name, NodeId, Standard, Tolerance, IsEnabled).
+    /// Tạo tag ban đầu cho 8 máy khi bảng TagDefinitions còn trống. NodeId theo channel "Metalcore" trong Kepware:
+    /// CTL.on#N (trạng thái), CTL.Temp#N (nhiệt độ), viscosity#N-S.PPM / .VISCOSITY TC / .VISCOSITY TT (máy N, công đoạn S).
     /// </summary>
     public static class DbSeeder
     {
@@ -26,10 +23,8 @@ namespace MetalCoreHMIOverview.Data
 
                 list.Add(new TagDefinition { Name = $"{p}.Status", NodeId = $"{Ch}.CTL.on#{m}", MachineNo = m, Section = "Machine", Metric = TagMetric.Status });
 
-                // Trang Metalcore HMI Overview: nhiệt độ 75 ± 10 °C
-                list.Add(new TagDefinition { Name = $"{p}.Temperature.Actual", NodeId = $"{Ch}.CTL.Temp#{m}", MachineNo = m, Section = "Temperature", Metric = TagMetric.Actual, Unit = "°C", Standard = 75, Tolerance = 10 });
+                list.Add(new TagDefinition { Name = $"{p}.Temperature.Actual", NodeId = $"{Ch}.CTL.Temp#{m}", MachineNo = m, Section = "Temperature", Metric = TagMetric.Actual, Unit = "°C", Standard = 70, Tolerance = 10 });
 
-                // Trang Viscosity: Stage 1 (205) chuẩn 16 ± 0.5 s, Stage 2 (6108) chuẩn 19 ± 0.5 s
                 for (var s = 1; s <= 2; s++)
                 {
                     var dev = $"{Ch}.viscosity#{m}-{s}";

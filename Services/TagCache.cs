@@ -66,7 +66,6 @@ namespace MetalCoreHMIOverview.Services
                 Interlocked.Exchange(ref _lastTicks, Math.Max(Interlocked.Read(ref _lastTicks), raw.TimestampUtc.Ticks));
             }
 
-            // Bỏ tag đã bị tắt / xóa khỏi database
             foreach (var id in _values.Keys.Where(id => !map.ContainsKey(id)))
                 if (_values.TryRemove(id, out _)) changed = true;
 

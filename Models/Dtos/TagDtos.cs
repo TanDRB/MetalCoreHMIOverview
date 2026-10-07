@@ -2,7 +2,6 @@ using MetalCoreHMIOverview.Models.Entities;
 
 namespace MetalCoreHMIOverview.Models.Dtos
 {
-    /// <summary>Giá trị mới nhất của một tag, trả cho giao diện.</summary>
     public class TagValueDto
     {
         public int TagId { get; set; }
@@ -31,10 +30,8 @@ namespace MetalCoreHMIOverview.Models.Dtos
         public bool IsGood { get; set; }
     }
 
-    /// <summary>Kết quả đọc thô từ OPC UA, chưa gắn thông tin tag.</summary>
     public record OpcReadResult(int TagId, double? Value, bool IsGood, DateTime TimestampUtc);
 
-    /// <summary>Một node trong cây OPC UA của Kepware.</summary>
     public record OpcNodeDto(string NodeId, string DisplayName, string NodeClass, bool HasChildren);
 
     public class OpcStatusDto

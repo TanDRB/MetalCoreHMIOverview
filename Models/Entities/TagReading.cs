@@ -1,6 +1,5 @@
 namespace MetalCoreHMIOverview.Models.Entities
 {
-    /// <summary>Một lần đọc giá trị của tag, lưu lịch sử vào SQL Server.</summary>
     public class TagReading
     {
         public long Id { get; set; }
@@ -12,7 +11,6 @@ namespace MetalCoreHMIOverview.Models.Entities
         /// <summary>true khi OPC UA trả về StatusCode Good.</summary>
         public bool IsGood { get; set; }
 
-        /// <summary>Thời điểm đọc (UTC).</summary>
         public DateTime TimestampUtc { get; set; }
     }
 }

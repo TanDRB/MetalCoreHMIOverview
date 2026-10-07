@@ -6,9 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace MetalCoreHMIOverview.Services
 {
-    /// <summary>
-    /// Chạy nền: đọc tag từ Kepware theo chu kỳ, cập nhật cache và ghi lịch sử vào SQL Server.
-    /// </summary>
+    /// <summary>Đọc tag từ Kepware theo chu kỳ, cập nhật cache và ghi lịch sử vào SQL Server.</summary>
     public class OpcUaPollingWorker : BackgroundService
     {
         private readonly IServiceScopeFactory _scopes;
@@ -40,7 +38,6 @@ namespace MetalCoreHMIOverview.Services
             {
                 try
                 {
-                    // 1) Nạp danh sách tag từ database định kỳ
                     if (DateTime.UtcNow >= nextReload)
                     {
                         using var scope = _scopes.CreateScope();
@@ -54,7 +51,6 @@ namespace MetalCoreHMIOverview.Services
                         nextReload = DateTime.UtcNow.AddSeconds(_opt.ReloadTagsIntervalSec);
                     }
 
-                    // 2) Đọc từ Kepware và cập nhật cache
                     var raw = await _opc.ReadAsync(tags, stoppingToken);
                     var scale = tags.ToDictionary(t => t.Id, t => t.Scale);
                     var results = raw
@@ -64,7 +60,6 @@ namespace MetalCoreHMIOverview.Services
                         .ToList();
                     _cache.Update(tags, results);
 
-                    // 3) Gom dữ liệu, ghi lịch sử mỗi PersistIntervalSec giây (lưu mọi giá trị đọc được, kể cả chất lượng Bad)
                     pending.AddRange(results.Where(r => r.Value.HasValue).Select(r => new TagReading
                     {
                         TagDefinitionId = r.TagId,
@@ -79,7 +74,6 @@ namespace MetalCoreHMIOverview.Services
                         await PersistAsync(pending, stoppingToken);
                     }
 
-                    // 4) Dọn lịch sử cũ
                     if (_opt.RetentionDays > 0 && DateTime.UtcNow >= nextCleanup)
                     {
                         nextCleanup = DateTime.UtcNow.AddHours(1);
@@ -127,7 +121,7 @@ namespace MetalCoreHMIOverview.Services
             }
             catch (Exception ex)
             {
-                // Giữ lại để thử ghi lần sau, nhưng không để bộ nhớ phình ra khi SQL Server tắt
+                // Giữ lại để ghi lần sau; giới hạn 50.000 bản ghi để bộ nhớ không phình khi SQL Server tắt
                 _log.LogWarning("Ghi SQL Server lỗi: {Message}", ex.Message);
                 if (pending.Count > 50_000) pending.RemoveRange(0, pending.Count - 50_000);
             }

@@ -1,8 +1,7 @@
 @{
     Layout = null;
 
-    // Thông số chuẩn dùng chung: 75 (±) 10 °C
-    const double standard = 75, tolerance = 10;
+    const double standard = 70, tolerance = 10;
 
     var machines = new[]
     {
@@ -60,7 +59,7 @@
                     <div class="t-body">
                         <div class="t-std">
                             <span class="t-label">TIÊU CHUẨN</span>
-                            <b class="t-std-val"><span class="t-std-n">@standard</span><span class="t-std-tol">(±) @tolerance °C</span></b>
+                            <b class="t-std-val"><span class="t-std-n">@standard<small>°C</small></span><span class="t-std-tol">± @tolerance</span></b>
                         </div>
                         <div class="t-act t-@state">
                             <span class="t-label">THỰC TẾ</span>
@@ -69,7 +68,7 @@
                     </div>
 
                     <div class="t-result">
-                        <span class="t-label">RESULT</span>
+                        <span class="t-label">KẾT QUẢ</span>
                         <span class="t-pill t-@state">
                             <svg class="ico"><use href="#@(ng ? "i-cross" : "i-check")" /></svg>@(ng ? "NG" : "OK")
                         </span>

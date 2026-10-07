@@ -3,30 +3,24 @@ using MetalCoreHMIOverview.Models.Options;
 using MetalCoreHMIOverview.Repositories;
 using MetalCoreHMIOverview.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Cấu hình riêng của từng máy (mật khẩu SQL Server...), không đưa lên git. Xem appsettings.Local.example.json
+// appsettings.Local.json (không đưa lên git) chứa mật khẩu SQL Server, xem appsettings.Local.example.json
 builder.Configuration.AddJsonFile(
     new Microsoft.Extensions.FileProviders.PhysicalFileProvider(builder.Environment.ContentRootPath),
     "appsettings.Local.json", optional: true, reloadOnChange: true);
 
-// MVC + API
 builder.Services.AddControllersWithViews();
 
-// SQL Server (Entity Framework Core)
 builder.Services.AddDbContext<AppDbContext>(o =>
     o.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Cấu hình Kepware / OPC UA
 builder.Services.Configure<OpcUaOptions>(builder.Configuration.GetSection("OpcUa"));
 
-// Repository
 builder.Services.AddScoped<ITagDefinitionRepository, TagDefinitionRepository>();
 builder.Services.AddScoped<ITagReadingRepository, TagReadingRepository>();
 
-// Service
 builder.Services.AddSingleton<IOpcUaClient, OpcUaClient>();
 builder.Services.AddSingleton<ITagCache, TagCache>();
 builder.Services.AddScoped<ITagService, TagService>();
@@ -34,8 +28,7 @@ builder.Services.AddHostedService<OpcUaPollingWorker>();
 
 var app = builder.Build();
 
-// Tạo / cập nhật database MetaCoreHMI và nạp danh sách tag ban đầu.
-// Nếu SQL Server chưa sẵn sàng thì chỉ ghi log, ứng dụng vẫn chạy.
+// Nếu SQL Server chưa sẵn sàng thì chỉ ghi log, ứng dụng vẫn chạy
 using (var scope = app.Services.CreateScope())
 {
     var log = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
@@ -51,11 +44,9 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
