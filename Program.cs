@@ -8,7 +8,9 @@ using Microsoft.Extensions.Options;
 var builder = WebApplication.CreateBuilder(args);
 
 // Cấu hình riêng của từng máy (mật khẩu SQL Server...), không đưa lên git. Xem appsettings.Local.example.json
-builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+builder.Configuration.AddJsonFile(
+    new Microsoft.Extensions.FileProviders.PhysicalFileProvider(builder.Environment.ContentRootPath),
+    "appsettings.Local.json", optional: true, reloadOnChange: true);
 
 // MVC + API
 builder.Services.AddControllersWithViews();
